@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  please_write_the_service_name:
+    build: .
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/workspace:cached
+      - home:/home
+volumes:
+  home:
