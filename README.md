@@ -31,10 +31,19 @@ At first, Please overwrite this files.
     >   devcontainer.json
     >   docker-compose.yml
     ```
+* (IMPORTANT) Overwrite devcontainer.json
+    ```json
+    "workspaceFolder": "/home",
+    ```
 
 * Reopen Remote-container
 
 * (On Remote) Run create-react-app
     ```
     npx create-react-app --template typescript service_name
+    ```
+
+* (On Remote) Product codes should be maintained in a other repository
+    ```git
+    git remote add origin https://github.com/XXXXXX/XXXXXXX.git
     ```
