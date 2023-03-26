@@ -1,49 +1,156 @@
-# node-on-docker
-At first, Please overwrite this files.
+# 目次
 
-## Prerequired
+<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
 
+<!-- code_chunk_output -->
+
+- [目次](#目次)
+- [はじめに](#はじめに)
+- [必要ソフトウェア](#必要ソフトウェア)
+- [環境構築手順](#環境構築手順)
+- [補足･その他](#補足その他)
+  - [devcontainer.jsonにVSCode拡張機能を追加する方法](#devcontainerjsonにvscode拡張機能を追加する方法)
+  - [デフォルトで開くディレクトリを変更する方法](#デフォルトで開くディレクトリを変更する方法)
+
+<!-- /code_chunk_output -->
+
+# はじめに
+開発環境を依存関係が入り組んだ独特なソフトウェアまみれにしないために､Dockerコンテナ上で開発するための方法を記載する
+
+# 必要ソフトウェア
 * Docker
 * VSCode
+    - [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 
-## Build the Docker environment
+# 環境構築手順
 
-* Please add this vscode plugin ([Remote - Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers))
+* 開発用ディレクトリを作成
+```Shell
+mkdir node-on-docker-test
+```
 
-* Overwrite Dockerfile
-    - Update node version
-    ```Dockerfile
-        FROM node:XX
-    ```
+* VSCodeでディレクトリを開き､下記コマンドを実行
+```
+Ctrl + Shift + P
+> Dev Containers: Configure Container Features...
+```
+![ConfigureContainerFeatures...](img/DevContainers_ConfigureContainerFeatures.png)
 
-* Overwrite docker-compose.yml
-    - Update service name
-    ```yml
-    services:
-        please_write_the_service_name:
-    ```
-* Run Remote-container command (Shift + Ctrl + P)
-    ```
-    Remote-Containers: Add Development Container Configuration Files...
-    From 'docker-compose.yml'
+* `Add Files...`を選択
+![Popup](img/DevContainers_Popup.png)
 
-    > .devcontainer
-    >   devcontainer.json
-    >   docker-compose.yml
-    ```
-* (IMPORTANT) Overwrite devcontainer.json
-    ```json
-    "workspaceFolder": "/home",
-    ```
+* 必要な構成を指定して`OK`
 
-* Reopen Remote-container
+![Node:18](img/DevContainers_CreateNode18.png)
 
-* (On Remote) Run create-react-app
-    ```
-    npx create-react-app --template typescript service_name
-    ```
+* `workspaceMount`, `workspaceFolder`を追加する
+```diff
+>>> .devcontainer/devcontainer.json
+{
+	"name": "Untitled Node.js project",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
++	"workspaceMount": "source=DOCKER_IMAGE_NAME,target=/home/node,type=volume,consistency=cached",
++	"workspaceFolder": "/home/node",
+	"remoteUser": "node"
+}
+```
 
-* (On Remote) Product codes should be maintained in a other repository
-    ```git
-    git remote add origin https://github.com/XXXXXX/XXXXXXX.git
-    ```
+* DOCKER_IMAGE_NAMEをプロジェクト名称等で更新
+DOCKER_IMAGE_NAME: Dockerで生成されるボリュームの名称
+
+```diff
+>>> .devcontainer/devcontainer.json
+{
+	"name": "Untitled Node.js project",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
++	"workspaceMount": "source=node-on-docker-test,target=/home/node,type=volume,consistency=cached",
++	"workspaceFolder": "/home/node",
+	"remoteUser": "node"
+}
+```
+
+* Dockerコンテナ側に共通で導入したい拡張機能があれば追加する
+[追加方法](#devcontainerjsonにvscode拡張機能を追加する方法)
+
+```diff
+>>> .devcontainer/devcontainer.json
+{
+	"name": "Untitled Node.js project",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"workspaceMount": "source=node-on-docker-test,target=/home/node,type=volume,consistency=cached",
+	"workspaceFolder": "/home/node",
+	"remoteUser": "node",
++	"customizations": {
++		"vscode": {
++			"extensions": [
++				"shd101wyy.markdown-preview-enhanced",
++				"jebbs.plantuml",
++				"mhutchie.git-graph"
++			]
++		}
++	}
+}
+```
+
+* Dockerコンテナを起動し､開く
+[ディレクトリ初期位置変更](#デフォルトで開くディレクトリを変更する方法)
+```
+Ctrl + Shift + P
+> Dev Containers: Rebuild and Reopen in Container
+```
+![Rebuild and Reopen in Container](img/DevContainers_Rebuild.png)
+
+![Home](img/Container_Home.png)
+
+# 補足･その他
+
+## devcontainer.jsonにVSCode拡張機能を追加する方法
+
+* VSCodeの拡張機能メニューを開く
+* 追加したい拡張機能を選び､右クリック > `Add to devcontainer.json` を選択
+
+![Add to devcontainer.json](img/VSCode_Add2Json.png)
+
+## デフォルトで開くディレクトリを変更する方法
+
+* `[Dev Container]`がついていないプロジェクトディレクトリを開く
+
+![プロジェクトディレクトリを開く](img/Open_env_project.png)
+
+* `devcontainer.json`を編集する
+
+```diff
+>>> .devcontainer/devcontainer.json
+{
+	"name": "Untitled Node.js project",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"workspaceMount": "source=node-on-docker-test,target=/home/node,type=volume,consistency=cached",
+-	"workspaceFolder": "/home/node",
++	"workspaceFolder": "/home/node/sub-directory",
+	"remoteUser": "node",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"shd101wyy.markdown-preview-enhanced",
+				"jebbs.plantuml",
+				"mhutchie.git-graph"
+			]
+		}
+	}
+}
+```
+
+* Dockerコンテナを起動し､開く
+```
+Ctrl + Shift + P
+> Dev Containers: Rebuild and Reopen in Container
+```
+![Rebuild and Reopen in Container](img/DevContainers_Rebuild.png)
